@@ -21,6 +21,6 @@
 
 #### Database Technologies 
 
-- *PostgreSQL: Used as the main relational database for storing user data and other structured data.*
+- *PostgreSQL: Used as the main relational database for storing user data and other structured data.* 
 
 
