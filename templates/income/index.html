@@ -1,0 +1,187 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<style>
+    
+
+    td{
+        font-size: 13px;
+        background-color: aquamarine;
+    }
+
+    .chart-container {
+        width: 100%;
+    }
+    
+    .card-body {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 15px;
+   }
+   
+   .index {
+        width: 100%;
+        height: 100%;
+    }
+    
+    canvas {
+        width: 100% !important;
+        height: auto !important;
+    }
+
+    .chartTitle {
+        font-size: 15px;
+        text-align: center;
+        font-style: italic;
+    }
+
+</style>
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-10">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                  <li class="breadcrumb-item"><a href="">Income</a></li>
+                  <li class="breadcrumb-item active" aria-current="page">My Income</li>
+                </ol>
+            </nav>
+        </div>
+    
+        <div class="col-md-2">
+            <a href="{% url 'add-income' %}" class="btn btn-primary" style="color: rgb(4, 222, 106); background-color: #fff; border: 2px solid rgb(4, 222, 106); border-radius: 13px;">Add Income</a>
+        </div>
+    </div>
+
+    <!--Table to display all expenses-->
+    <div class="container">
+
+        {% include 'partials/_messages.html' %}
+        {% if income.count %}
+
+        <div class="row">
+            <div class="col-md-8"></div>
+            <div class="col-md-4">
+                <div class="form-group">
+                    <input type="text" class="form-control" id="searchField" placeholder="Search">
+                </div>
+            </div>
+        </div>
+        
+        <div class="app-table">
+            <table class=" table table-stripped, table-hover">
+                <thead>
+                    <tr>
+                        <th>Amount ({{ currency }})</th>
+                        <th>Source</th>
+                        <th>Description</th>
+                        <th>Date</th>
+                        <th></th>
+                    </tr>
+    
+                    <tbody>
+                        {% for income in page_obj %}
+                        <tr>
+                            <td>{{income.amount}}</td>
+                            <td>{{income.source}}</td>
+                            <td>{{income.description}}</td>
+                            <td>{{income.date}}</td>
+    
+                            <td>
+                                <a href="{% url 'income_edit' income.id %}" 
+                                   class="btn btn-secondary btn-sm" 
+                                   style="color: rgb(4, 222, 106); background-color: #fff; border: 2px solid rgb(4, 222, 106); border-radius: 10px; padding: 2px 5px; font-size: 12px;">
+                                   Edit
+                                </a>
+                                <meta name="csrf-token" content="{{ csrf_token }}">
+                                <a href="{% url 'income-delete' income.id %}" 
+                                  class="btn btn-secondary btn-sm" 
+                                  style="color: rgb(255, 16, 16); background-color: #fff; border: 2px solid rgb(255, 16, 16); border-radius: 10px; padding: 2px 5px; font-size: 12px;"
+                                  onclick="showIncomeDeleteModal(event, `{{ income.id }}`);">
+                                  X
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </thead>
+            </table>
+        </div>
+
+
+        <p class="no-results" style="display: none;">No results found </p>
+        <div class="table-output">
+            <table class=" table table-stripped, table-hover">
+                <thead>
+                    <tr>
+                        <th>Amount ({{ currency }})</th>
+                        <th>Source</th>
+                        <th>Description</th>
+                        <th>Date</th>
+                        <th></th>
+                    </tr>
+    
+                    <tbody class="table-body">
+                       
+                    </tbody>
+                </thead>
+            </table>
+        </div>
+
+        <div class="pagination-container">
+            <div class="">
+                showing page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+            </div>
+    
+            <ul class="pagination justify-content-end">
+                {% if page_obj.has_previous %}
+                <li {% if page_obj.number == 1 %} class="page-item active" {% endif %}><a class="page-link" href="?page=1">&laquo; 1</a></li>
+                <li class="page-item"> <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a></li>
+                {% endif %}
+          
+                {% if page_obj.has_next %}
+                <li class="page-item"> <a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a></li>
+                <li class="page-item"> <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">{{ page_obj.paginator.num_pages}} &raquo;</a></li>
+                {% endif %}
+          
+          
+            </ul>
+        </div>
+        {% endif %}
+    </div>
+
+</div>
+
+<div class="chart-container mt-4">
+    <div class="row">
+        <div class="col-md-6 col-sm-12 mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <div class="index">
+                        <h5 class="chartTitle">Distribution per source (last 3 months)</h5>
+                        <canvas id="myChart1"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-sm-12 mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <div class="index">
+                        <h5 class="chartTitle">Source Cumulative Comparison (Last 3 Months)</h5>
+                        <canvas id="myChart2"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script src="{% static 'js/main.js' %}"></script>
+<script src="{% static 'js/searchIncome.js' %}"></script>
+<script src="{% static 'js/incomeindexstats.js' %}"></script>
+{% endblock %}

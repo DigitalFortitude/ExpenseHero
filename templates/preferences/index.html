@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+
+
+<div class="container mt-3">
+    {% include 'partials/_messages.html' %}
+    <h5>Preferred Currency</h5>
+    <form action="{% url 'preferences' %}" method="post">
+        {% csrf_token %}
+        <div class="input-group">
+            <select name="currency" class="form-select" id="inputGroupSelect04" aria-label="Example select with button addon">
+              {% if user_preferences %}
+              <option value="{{ user_preferences.currency }}" selected>
+                {{ user_preferences.currency }}
+              </option>
+              {% endif %}
+              {% for currency in currencies %}
+
+              <option name="currency"  value="{{currency.name}} - {{currency.value}}" >
+                {{currency.name}} - {{currency.value}}
+              </option>
+
+              {% endfor %}
+            </select>
+            <input class="btn btn-outline-secondary" type="submit" value="Save" />
+          </div>
+    </form> 
+    <hr><br>
+    <div class="csv">
+      <h5>Download Expenses In CSV</h5>
+      <a href="{% url 'export_csv' %}" class="btn btn-primary">Export CSV</a>
+    </div><hr>
+    <div class="pdf">
+      <h5>Download Expenses In PDF</h5>
+      <a href="{% url 'export_pdf' %}" class="btn btn-primary">Export PDF</a>
+    </div><hr>
+    <div class="excel">
+      <h5>Download Expenses In EXCEL</h5>
+      <a href="{% url 'export_excel' %}" class="btn btn-primary">Export Excel</a>
+    </div>
+    <hr/><br>
+
+    <div class="delete-account" style="display: float; float: right; padding-bottom: 15px;">
+      <h5>Delete Account</h5>
+      <meta name="csrf-token" content="{{ csrf_token }}">
+      <a 
+       href="{% url 'delete_account' user_id %}" 
+       class="btn btn-primary" 
+       style="background-color: rgb(217, 22, 22); border-radius: 10px; border: 2px solid red;"
+       onclick="showUserDeleteModal(event, `{{ user_id }}`);">
+        Delete Account
+      </a>
+    </div><br>
+</div>
+
+
+{% endblock content %}

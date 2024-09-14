@@ -1,0 +1,81 @@
+{% extends 'base_auth.html' %}
+{% load static %}
+
+{% block content %}
+
+<style>
+    .bi {
+        width: 1.5em;  /* Increase the size of the icon */
+        height: 1.5em; /* Increase the size of the icon */
+        fill: currentColor; /* Inherits the color from the parent */
+    }
+</style>
+
+<div style="display: none;">
+    <svg xmlns="http://www.w3.org/2000/svg">
+        <symbol id="house-fill" viewBox="0 0 16 16">
+            <path d="M8 .5l-6 6V15h12V6.5l-6-6zM7 13V9h2v4H7zm4-1.293l-1-1V9h-2v1.707l-1 1V6.5L8 3.5l3 3v5.207z"/>
+        </symbol>
+    </svg>
+</div>
+
+<div class="offcanvas-body d-md-flex flex-column p-0 pt-lg-3 overflow-y-auto">
+    <ul class="nav flex-column">
+        <li class="nav-item">
+          <a class="nav-link d-flex align-items-center gap-2 active" aria-current="page" href="{% url 'landing-page' %}">
+            <svg class="bi"><use xlink:href="#house-fill"/></svg>
+            Home
+          </a>
+        </li>
+    </ul>
+</div>
+
+<div class="centered-container">
+    <div class="row">
+        <div class="col-12 d-flex justify-content-center">
+            <div class="card login-card">
+                <div class="card-body">
+                    <div class="card-title py-3">
+                        <h4>Login to your account</h4>
+                    </div>
+                    <form action="{% url 'login' %}" method="post">
+                        {% csrf_token %}
+                        {% include 'partials/_messages.html' %}
+                        <div class="form-group mb-3">
+                            <input 
+                            type="text" 
+                            name="username"
+                            placeholder="Username"
+                            id="usernamefield" 
+                            value="{{ fieldValues.username }}"
+                            class="form-control form-control-sm"
+                            />
+                        </div>
+                 
+                        <div class="form-group mb-3">
+                            <input 
+                            type="password" 
+                            name="password"
+                            placeholder="Password"
+                            id="passwordField2" 
+                            class="form-control form-control-sm" 
+                            />
+                        </div>
+                        <div class="justify-content-center submit-btn">
+                            <input type="submit" value="Login" class="btn btn-primary w-100" style="border-radius: 15px;"/>
+                        </div>
+                    </form>
+
+                    <div class="container">
+                        <span class="text-lead lead" style="font-size: 16px; " >Don't have an account?</span><a href="{% url 'register' %}"> Register</a><br>
+                        <span class="text-lead lead" style="font-size: 16px; ">Forgot Password?</span><a href="{% url 'reset-password' %}"> Reset</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="{% static 'js/register.js' %}"></script>
+
+{% endblock content %}

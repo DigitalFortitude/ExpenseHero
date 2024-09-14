@@ -1,0 +1,220 @@
+{% extends 'base.html' %}
+{% load static %}
+
+
+{% block content %}
+
+<style>
+    td{
+        font-size: 13px;
+        /* background-color: aquamarine; */
+    }
+    
+    .chart-container {
+        width: 100%;
+    }
+    
+    .card-body {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 15px;
+   }
+   
+   .index {
+        width: 100%;
+        height: 100%;
+    }
+    
+    canvas {
+        width: 100% !important;
+        height: auto !important;
+    }
+
+    .chartTitle {
+        font-size: 15px;
+        text-align: center;
+        font-style: italic;
+    }
+
+</style>
+
+
+<!-- Bootstrap Modal for Delete Confirmation -->
+<div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="deleteModalLabel">Confirm Delete</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          Are you sure you want to delete this expense?
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">No</button>
+          <button type="button" class="btn btn-danger" id="confirmDeleteBtn">Yes, Delete</button>
+        </div>
+      </div>
+    </div>
+</div>
+
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-10">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                  <li class="breadcrumb-item"><a href="{% url 'expenses' %}">Expenses</a></li>
+                  <li class="breadcrumb-item active" aria-current="page">My Expenses</li>
+                </ol>
+            </nav>
+        </div>
+
+        <div class="col-md-2">
+            <a href="{% url 'add_expense' %}" class="btn btn-primary" style="color: rgb(4, 222, 106); background-color: #fff; border: 2px solid rgb(4, 222, 106); border-radius: 13px;">Add Expense</a>
+            
+        </div>
+        
+    </div>
+
+    {% include 'partials/_messages.html' %}
+    <!--Table to display all expenses-->
+    <div class="container">
+
+        {% if expenses.count %}
+        <div class="row">
+            <div class="col-md-8"></div>
+            <div class="col-md-4">
+                <!-- <a href="#" class="btn btn-secondary">Export CSV</a> -->
+                <div class="form-group">
+                    <input type="text" class="form-control" id="searchField" placeholder="Search">
+                </div>
+            </div>
+        </div>
+        
+        <div class="app-table">
+            <table class=" table table-stripped, table-hover table-color" >
+                <thead>
+                    <tr>
+                        <th>Amount ({{ currency }})</th>
+                        <th>Category</th>
+                        <th>Description</th>
+                        <th>Date</th>
+                        <th></th>
+                    </tr>
+    
+                    <tbody>
+                        {% for expense in page_obj %}
+                        <tr>
+                            <td>{{expense.amount}}</td>
+                            <td>{{expense.category}}</td>
+                            <td>{{expense.description}}</td>
+                            <td>{{expense.date}}</td>
+    
+                            <td>
+                                <a href="{% url 'expense_edit' expense.id %}" 
+                                   class="btn btn-secondary btn-sm" 
+                                   style="color: rgb(4, 222, 106); background-color: #fff; border: 2px solid rgb(4, 222, 106); border-radius: 10px; padding: 2px 5px; font-size: 12px;">
+                                   Edit
+                                </a>
+                                <meta name="csrf-token" content="{{ csrf_token }}">
+                                <a 
+                                  href="{% url 'expense-delete' expense.id %}"
+                                  class="btn btn-secondary btn-sm delete-btn" 
+                                  style="color: rgb(255, 16, 16); background-color: #fff; border: 2px solid rgb(255, 16, 16); border-radius: 10px; padding: 2px 5px; font-size: 12px;"
+                                  onclick="showDeleteModal(event, `{{ expense.id }}`);">
+                                  X
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </thead>
+            </table>
+        </div>
+
+        <!--Hiding table when result not found -->
+        <p class="no-results" style="display: none;">No results found </p>
+        <div class="table-output">
+            <table class=" table table-stripped, table-hover">
+                <thead>
+                    <tr>
+                        <th>Amount ({{ currency }})</th>
+                        <th>Category</th>
+                        <th>Description</th>
+                        <th>Date</th>
+                        <th></th>
+                    </tr>
+    
+                    <tbody class="table-body">
+                       
+                    </tbody>
+                </thead>
+            </table>
+        </div>
+
+        <div class="row pagination-container d-flex align-items-center">
+                <div class="col-md-6">
+                    Showing page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+                </div>
+                <div class="col-md-6">
+                    <ul class="pagination justify-content-end">
+                        {% if page_obj.has_previous %}
+                        <li {% if page_obj.number == 1 %} class="page-item active" {% endif %}>
+                            <a class="page-link" href="?page=1">&laquo; 1</a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a>
+                        </li>
+                        {% endif %}
+                        {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">{{ page_obj.paginator.num_pages }} &raquo;</a>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<div class="chart-container mt-4">
+    <div class="row">
+        <div class="col-md-6 col-sm-12 mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <div class="index">
+                        <h5 class="chartTitle">Distribution per category (last 3 months)</h5>
+                        <canvas id="myChart1"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-sm-12 mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <div class="index">
+                        <h5 class="chartTitle">Category Cumulative Comparison (Last 3 Months)</h5>
+                        <canvas id="myChart2"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<script src="{% static 'js/main.js' %}"></script>
+<script src="{% static 'js/searchExpenses.js' %}"></script>
+<script src="{% static 'js/indexstats.js' %}"></script>
+
+{% endblock %}
